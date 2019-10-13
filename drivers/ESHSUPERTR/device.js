@@ -31,6 +31,9 @@ class ESHSUPERTR extends ZigBeeDevice {
 			//Poll i used since there is no way to set up att listemer to att 1043 without geting error
 			this.registerCapability('onoff.childlock', 'hvacThermostat', {
 				get: '1043',
+				setParser: value => {
+					return value === 'locked' ? 1 : 0;
+				},
 				reportParser: value => value === 1,
 				report: '1043',
 				getOpts: {
@@ -130,6 +133,10 @@ class ESHSUPERTR extends ZigBeeDevice {
 			this.setCapabilityValue('measure_temperature.floor', parsedValue);
 		}, 0);
 */
+
+		new Homey.FlowCardAction('set_child_lock')
+			.register()
+			.registerRunListener(args => args.device.triggerCapabilityListener('onoff.childlock', args.child_lock, {}));
 
 	}
 

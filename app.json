@@ -52,6 +52,41 @@
     "large": "/assets/images/Large.jpg",
     "small": "/assets/images/small.jpg"
   },
+  "flow": {
+    "actions": [
+      {
+        "id": "set_child_lock",
+        "title": {
+          "en": "Set child lock"
+        },
+        "args": [
+          {
+            "name": "device",
+            "type": "device",
+            "filter": "driver_id=ESHSUPERTR"
+          },
+          {
+            "type": "dropdown",
+            "name": "child_lock",
+            "values": [
+              {
+                "id": "unlocked",
+                "label": {
+                  "en": "Unlocked"
+                }
+              },
+              {
+                "id": "locked",
+                "label": {
+                  "en": "Locked"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
   "drivers": [
     {
       "id": "ESH316GLED",
