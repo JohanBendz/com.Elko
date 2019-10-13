@@ -173,7 +173,12 @@
   "capabilities": {
     "onoff.childlock": {
       "type": "boolean",
-      "icon": "/drivers/ESHSUPERTR/assets/child.svg",
+      "title": {
+        "en": "Child Lock"
+      },
+      "desc": {
+        "en": "Child Lock"
+      },
       "label": {
         "true": {
           "en": "Yes"
@@ -182,18 +187,19 @@
           "en": "No"
         }
       },
-      "title": {
-        "en": "Child Lock"
-      },
-      "desc": {
-        "en": "Child Lock"
-      },
       "getable": true,
-      "setable": false
+      "setable": false,
+      "uiComponent": "sensor",
+      "icon": "/drivers/ESHSUPERTR/assets/child.svg"
     },
     "onoff.heat": {
       "type": "boolean",
-      "icon": "/drivers/ESHSUPERTR/assets/heating.svg",
+      "title": {
+        "en": "Heating"
+      },
+      "desc": {
+        "en": "Heating"
+      },
       "label": {
         "true": {
           "en": "Heating"
@@ -202,14 +208,10 @@
           "en": "Idle"
         }
       },
-      "title": {
-        "en": "Heating"
-      },
-      "desc": {
-        "en": "Heating"
-      },
       "getable": true,
-      "setable": false
+      "setable": false,
+      "uiComponent": "sensor",
+      "icon": "/drivers/ESHSUPERTR/assets/heating.svg"
     },
     "temp_mode": {
       "type": "number",
