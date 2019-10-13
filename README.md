@@ -41,7 +41,8 @@ Add support for Elko SmartHome to the Athom Homey
 - If thermostat does not have a floor sensor connected the value is now blanked out (not -99,9c anymore)
 - Heating and Child lock status is now moved from buttons to sesnor screen
 - Child lock can now be set through Flow card
-(Thanks to Bjørnar Almli for help with this update)
+- (Thanks to Bjørnar Almli for help with this update)
+
 ## Version: 0.0.5
 - Fixed potential uncaught exception - Still forced_timeouts is repoted, but problem should be less for some users (Thanks to Espen Aa Ljosland!)
 - Removed function to prevent multiple commands since users reporting problems when adding devices to flows.
