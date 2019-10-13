@@ -18,7 +18,7 @@ Add support for Elko SmartHome to the Athom Homey
 
 
 ## Plan for support:
-    - ESH 316GLED Dimmer Remote - Working on support, but On/Off command from dimmer remote is not detected by Homey.
+  - ESH 316GLED Dimmer Remote - Working on support, but On/Off command from dimmer remote is not detected by Homey.
   - **New Elko SmartHome products - Unknown release**
     - ESH Plus wall Switch - 4 button Zigbee switch (Battery)
     - ESH Plus wall Switch with PIR - 4 button Zigbee switch (Battery)
