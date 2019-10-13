@@ -6,20 +6,20 @@ Add support for Elko SmartHome to the Athom Homey
   http://proff.elko.no/elko-smart-home-316gled/esh-rs16-316gled-dimmer-rf-ph-article2622-1781.html
   - *Known bugs*:
     - forced_timeouts when multiple commands are sent from Homey app or Web app
+    - New ESH316GLED devices produced after June 2019 should not be affected of this bug
 
 - **ESH Super TR RF PH** - Thermostat
   http://proff.elko.no/elko-smart-home-super-termostat/esh-plus-super-tr-rf-ph-article2629-1779.html
   - Read floor and air temp
+  - Read Thermostat mode
   - Read/Write Thermostat set temp
   - Read Heating status
   - Read Child lock status
 
 
 ## Plan for support:
-  - **ESH Super TR RF PH**
-    - See if air or floor temperature is active thermostat source
-
-  - **New Elko SmartHome products - Late 2018 / early 2019 release**
+    - ESH 316GLED Dimmer Remote - Working on support, but On/Off command from dimmer remote is not detected by Homey.
+  - **New Elko SmartHome products - Unknown release**
     - ESH Plus wall Switch - 4 button Zigbee switch (Battery)
     - ESH Plus wall Switch with PIR - 4 button Zigbee switch (Battery)
     - ESH Plus wall Switch with dimmer - 5 button with dimmer wheel Zigbee switch (Battery)
@@ -34,7 +34,13 @@ Add support for Elko SmartHome to the Athom Homey
 # Changelog
 
 ## Version: 0.0.6
+**Thermostat has to be readded to get all new capabilites!**
 - Updated Meshdriver
+- Updated with support for Norwegian texts
+- Temperature Mode (air, floor, floor guard) on thermostat is now pulled from device and used to set correct temperature on device card
+- If thermostat does not have a floor sensor connected the value is now blanked out (not -99,9c anymore)
+- Heating and Child lock status is now moved from buttons to sesnor screen
+- Child lock can now be set through Flow card
 
 ## Version: 0.0.5
 - Fixed potential uncaught exception - Still forced_timeouts is repoted, but problem should be less for some users (Thanks to Espen Aa Ljosland!)
