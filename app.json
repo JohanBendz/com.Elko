@@ -1,7 +1,7 @@
 {
   "id": "com.elko",
   "version": "0.0.6",
-  "compability": ">=1.5.3",
+  "compatibility": ">=1.5.3",
   "sdk": 2,
   "brandColor": "#be0000",
   "name": {
