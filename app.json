@@ -1,18 +1,21 @@
 {
   "id": "com.elko",
+  "version": "0.0.6",
+  "compability": ">=1.5.3",
+  "sdk": 2,
+  "brandColor": "#be0000",
   "name": {
-    "en": "ELKO"
+    "en": "ELKO Smart Home"
   },
   "description": {
-    "en": "This app adds support for your ELKO Smart Home devices"
+    "en": "This app adds support for your ELKO Smart Home devices",
+    "no": "Denne appen gir support for Elko Smart Home enheter",
   },
-  "category": [
-    "lights",
-    "climate"
-  ],
-  "version": "0.0.6",
-  "compatibility": ">=1.5.3",
-  "sdk": 2,
+  "category": [ "lights", "climate" ],
+  "images": {
+    "large": "/assets/images/Large.jpg",
+    "small": "/assets/images/small.jpg"
+  },
   "author": {
     "name": "Pål Raymond Johansen",
     "email": "prj_84@hotmail.com"
@@ -48,16 +51,13 @@
       }
     }
   },
-  "images": {
-    "large": "/assets/images/Large.jpg",
-    "small": "/assets/images/small.jpg"
-  },
   "flow": {
     "actions": [
       {
         "id": "set_child_lock",
         "title": {
-          "en": "Set child lock"
+          "en": "Set child lock",
+          "no": "Sett barnesikkring"
         },
         "args": [
           {
@@ -72,13 +72,15 @@
               {
                 "id": "unlocked",
                 "label": {
-                  "en": "Unlocked"
+                  "en": "Unlocked",
+                  "no": "Ulåst"
                 }
               },
               {
                 "id": "locked",
                 "label": {
-                  "en": "Locked"
+                  "en": "Locked",
+                  "no": "Låst"2
                 }
               }
             ]
@@ -91,7 +93,8 @@
     {
       "id": "ESH316GLED",
       "name": {
-        "en": "ESH 316GLED Dimmer RF PF"
+        "en": "ESH 316GLED Dimmer RF PF",
+        "no": "ESH 316GLED Dimmer RF PF"
       },
       "class": "light",
       "capabilities": [
@@ -111,7 +114,8 @@
         "learnmode": {
           "image": "/drivers/ESH316GLED/assets/include.svg",
           "instruction": {
-            "en": "Click on and hold dimmer wheel 1. and pushbutton 2. Until green LED 3. flashes. Wait for Homey to list device"
+            "en": "Click on and hold dimmer wheel 1. and pushbutton 2. Until green LED 3. flashes. Wait for Homey to list device",
+            "no": "Klikk og hold dimmerhjulet 1. og knapp 2. inntil den grønnt lys 3, blinker. Vent på at Homey lister enheten"
           }
         }
       },
@@ -123,7 +127,8 @@
     {
       "id": "ESHSUPERTR",
       "name": {
-        "en": "ESH SUPER TR Thermostat RF"
+        "en": "ESH SUPER TR Thermostat RF",
+        "no": "ESH Super TR Thermostat RF"
       },
       "class": "thermostat",
       "capabilities": [
@@ -145,12 +150,14 @@
         },
         "measure_temperature.air": {
           "title": {
-            "en": "Air"
+            "en": "Air",
+            "no": "Luft"
           }
         },
         "measure_temperature.floor": {
           "title": {
-            "en": "Floor"
+            "en": "Floor",
+            "no": "Gulv"
           }
         }
       },
@@ -195,7 +202,8 @@
         "learnmode": {
           "image": "/drivers/ESHSUPERTR/assets/include.svg",
           "instruction": {
-            "en": "Click on and hold arrow up and M Button (1) until joining/pairing is displayed. Wait for Homey to list device"
+            "en": "Click on and hold arrow up and M Button (1) until joining/pairing is displayed. Wait for Homey to list device",
+            "no": "Klikk og hold pil opp og M knappen (1) inntil Joining/pairing vises i displayet. Vent på at Homey lister enheten"
           }
         }
       },
@@ -209,38 +217,46 @@
     "onoff.childlock": {
       "type": "boolean",
       "title": {
-        "en": "Child Lock"
+        "en": "Child Lock",
+        "no": "Barnesikkring"
       },
       "desc": {
-        "en": "Child Lock"
+        "en": "Child Lock",
+        "no": "Barnesikkring"
       },
       "label": {
         "true": {
-          "en": "Yes"
+          "en": "Yes",
+          "no": "Aktivert"
         },
         "false": {
-          "en": "No"
+          "en": "No",
+          "no": "Deaktivert"
         }
       },
       "getable": true,
-      "setable": false,
+      "setable": true,
       "uiComponent": "sensor",
       "icon": "/drivers/ESHSUPERTR/assets/child.svg"
     },
     "onoff.heat": {
       "type": "boolean",
       "title": {
-        "en": "Heating"
+        "en": "Heating",
+        "no": "Varmer"
       },
       "desc": {
-        "en": "Heating"
+        "en": "Heating",
+        "no": "Varmer"
       },
       "label": {
         "true": {
-          "en": "Heating"
+          "en": "Heating",
+          "no": "Varmer"
         },
         "false": {
-          "en": "Idle"
+          "en": "Idle",
+          "no": "Inaktiv"
         }
       },
       "getable": true,
@@ -251,7 +267,8 @@
     "temp_mode": {
       "type": "number",
       "title": {
-        "en": "Temperature mode"
+        "en": "Temperature mode",
+        "no": "Temperatur modus"
       },
       "getable": true,
       "setable": false,
