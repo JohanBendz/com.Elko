@@ -149,28 +149,29 @@ class ESHSUPERTR extends ZigBeeDevice {
 
 	async updateTemperature(value, temp_mode) {
 		const temperature = value > -5000 ? Math.round((value / 100) * 10) / 10 : null;
-		setTimeout(this.updateMeasureTemperature.bind(this), 1000);
+		if (this.hasCapability("temp_mode") &&
+			this.hasCapability("measure_temperature") &&
+			this.getCapabilityValue("temp_mode") === temp_mode) {
+			this.log(`updateTemperature: temp_mode: ${temp_mode} -> temp: ${temperature}`);
+			await this.setCapabilityValue('measure_temperature', temperature).catch(console.error);
+		}
 		return temperature;
 	}
 
 	async updateTempMode(temp_mode) {
-		setTimeout(this.updateMeasureTemperature.bind(this), 1000);
-		return temp_mode;
-	}
-
-	async updateMeasureTemperature() {
 		if (this.hasCapability("temp_mode") &&
 			this.hasCapability("measure_temperature")) {
-			const temp_mode = this.getCapabilityValue("temp_mode");
 			const airTemp = this.getCapabilityValue("measure_temperature.air");
 			const floorTemp = this.getCapabilityValue("measure_temperature.floor");
-			this.log(`updateMeasureTemperature: temp_mode: ${temp_mode}, air temp: ${airTemp}, floor temp: ${floorTemp}`);
 			if (temp_mode === 0 || temp_mode === 3) {
+				this.log(`updateTempMode: temp_mode: ${temp_mode} -> air temp: ${airTemp}`);
 				await this.setCapabilityValue('measure_temperature', airTemp).catch(console.error);
 			} else if (temp_mode === 1) {
+				this.log(`updateTempMode: temp_mode: ${temp_mode} -> floor temp: ${floorTemp}`);
 				await this.setCapabilityValue('measure_temperature', floorTemp).catch(console.error);
 			}
 		}
+		return temp_mode;
 	}
 
 }
