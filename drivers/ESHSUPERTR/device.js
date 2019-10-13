@@ -32,9 +32,13 @@ class ESHSUPERTR extends ZigBeeDevice {
 			this.registerCapability('onoff.childlock', 'hvacThermostat', {
 				get: '1043',
 				setParser: value => {
+					this.log(`onoff.childlock: setParser: ${value}`);
 					return value === 'locked' ? 1 : 0;
 				},
-				reportParser: value => value === 1,
+				reportParser: value => {
+					this.log(`onoff.childlock: reportParser: ${value}`);
+					return value === 1;
+				},
 				report: '1043',
 				getOpts: {
 					getOnLine: true,
@@ -136,7 +140,10 @@ class ESHSUPERTR extends ZigBeeDevice {
 
 		new Homey.FlowCardAction('set_child_lock')
 			.register()
-			.registerRunListener(args => args.device.triggerCapabilityListener('onoff.childlock', args.child_lock, {}));
+			.registerRunListener((args, state) => {
+				this.log(`set_child_lock triggered for ${args.device.getName()}: set child lock to: ${args.child_lock}`);
+				return args.device.triggerCapabilityListener('onoff.childlock', args.child_lock, {});
+			});
 
 	}
 
@@ -155,10 +162,13 @@ class ESHSUPERTR extends ZigBeeDevice {
 		if (this.hasCapability("temp_mode") &&
 			this.hasCapability("measure_temperature")) {
 			const temp_mode = this.getCapabilityValue("temp_mode");
+			const airTemp = this.getCapabilityValue("measure_temperature.air");
+			const floorTemp = this.getCapabilityValue("measure_temperature.floor");
+			this.log(`updateMeasureTemperature: temp_mode: ${temp_mode}, air temp: ${airTemp}, floor temp: ${floorTemp}`);
 			if (temp_mode === 0 || temp_mode === 3) {
-				await this.setCapabilityValue('measure_temperature', this.getCapabilityValue("measure_temperature.air")).catch(console.error);
+				await this.setCapabilityValue('measure_temperature', airTemp).catch(console.error);
 			} else if (temp_mode === 1) {
-				await this.setCapabilityValue('measure_temperature', this.getCapabilityValue("measure_temperature.floor")).catch(console.error);
+				await this.setCapabilityValue('measure_temperature', floorTemp).catch(console.error);
 			}
 		}
 	}
