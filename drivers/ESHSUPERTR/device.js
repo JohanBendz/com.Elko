@@ -114,7 +114,7 @@ class ESHSUPERTR extends ZigBeeDevice {
 		// Temperature mode
 		this.registerCapability("temp_mode", "hvacThermostat", {
 			get: "1027",
-			reportParser: value => value,
+			reportParser: value => this.updateTempMode(value),
 			report: "1027",
 			getOpts: {
 				getOnLine: true,
@@ -134,13 +134,26 @@ class ESHSUPERTR extends ZigBeeDevice {
 	}
 
 	async updateTemperature(value, temp_mode) {
-		const temperature = Math.round((value / 100) * 10) / 10;
-		if (this.hasCapability("temp_mode") &&
-			this.hasCapability("measure_temperature") &&
-			this.getCapabilityValue("temp_mode") === temp_mode) {
-			await this.setCapabilityValue('measure_temperature', temperature).catch(console.error);
-		}
+		const temperature = value > -5000 ? Math.round((value / 100) * 10) / 10 : null;
+		setTimeout(this.updateMeasureTemperature.bind(this), 1000);
 		return temperature;
+	}
+
+	async updateTempMode(temp_mode) {
+		setTimeout(this.updateMeasureTemperature.bind(this), 1000);
+		return temp_mode;
+	}
+
+	async updateMeasureTemperature() {
+		if (this.hasCapability("temp_mode") &&
+			this.hasCapability("measure_temperature")) {
+			const temp_mode = this.getCapabilityValue("temp_mode");
+			if (temp_mode === 0 || temp_mode === 3) {
+				await this.setCapabilityValue('measure_temperature', this.getCapabilityValue("measure_temperature.air")).catch(console.error);
+			} else if (temp_mode === 1) {
+				await this.setCapabilityValue('measure_temperature', this.getCapabilityValue("measure_temperature.floor")).catch(console.error);
+			}
+		}
 	}
 
 }
