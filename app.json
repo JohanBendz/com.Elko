@@ -9,7 +9,7 @@
   },
   "description": {
     "en": "This app adds support for your ELKO Smart Home devices",
-    "no": "Denne appen gir support for Elko Smart Home enheter",
+    "no": "Denne appen gir support for Elko Smart Home enheter"
   },
   "category": [ "lights", "climate" ],
   "images": {
