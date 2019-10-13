@@ -33,6 +33,9 @@ Add support for Elko SmartHome to the Athom Homey
 
 # Changelog
 
+## Version: 0.0.6
+- Updated Meshdriver
+
 ## Version: 0.0.5
 - Fixed potential uncaught exception - Still forced_timeouts is repoted, but problem should be less for some users (Thanks to Espen Aa Ljosland!)
 - Removed function to prevent multiple commands since users reporting problems when adding devices to flows.
