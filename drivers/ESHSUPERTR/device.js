@@ -141,8 +141,8 @@ class ESHSUPERTR extends ZigBeeDevice {
 		new Homey.FlowCardAction('set_child_lock')
 			.register()
 			.registerRunListener((args, state) => {
-				this.log(`set_child_lock triggered for ${args.device.getName()}: set child lock to: ${args.child_lock}`);
-				return args.device.triggerCapabilityListener('onoff.childlock', args.child_lock, {});
+				args.device.log(`set_child_lock triggered for ${args.device.getName()}: set child lock to: ${args.child_lock}`);
+				return args.device.setCapabilityValue("onoff.childlock", args.child_lock);
 			});
 
 	}
