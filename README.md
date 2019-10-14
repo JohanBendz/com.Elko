@@ -39,7 +39,7 @@ Add support for Elko SmartHome to the Athom Homey
 - Updated with support for Norwegian texts
 - Temperature Mode (air, floor, floor guard) on thermostat is now pulled from device and used to set correct temperature on device card
 - If thermostat does not have a floor sensor connected the value is now blanked out (not -99,9c anymore)
-- Heating and Child lock status is now moved from buttons to sesnor screen
+- Heating and Child lock status is now moved from buttons to sensor screen
 - Child lock can now be set through Flow card
 - (Thanks to Bjørnar Almli for help with this update)
 
