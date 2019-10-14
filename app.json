@@ -216,6 +216,8 @@
   "capabilities": {
     "onoff.childlock": {
       "type": "boolean",
+      "uiComponent": "sensor",
+      "uiQuickAction": false,
       "title": {
         "en": "Child Lock",
         "no": "Barnesikkring"
@@ -224,23 +226,31 @@
         "en": "Child Lock",
         "no": "Barnesikkring"
       },
-      "label": {
-        "true": {
-          "en": "Yes",
-          "no": "Aktivert"
-        },
-        "false": {
-          "en": "No",
-          "no": "Deaktivert"
-        }
+      "titleTrue": {
+        "en": "Locked",
+        "no": "Aktivert"
+      },
+      "titleFalse": {
+        "en": "Unlocked",
+        "no": "Deaktivert"
       },
       "getable": true,
       "setable": true,
-      "uiComponent": "sensor",
+      "insights": true,
+      "insightsTitleTrue": {
+        "en": "Locked",
+        "no": "Aktivert"
+      },
+      "insightsTitleFalse": {
+        "en": "Unlocked",
+        "no": "Deaktivert"
+      },
       "icon": "/drivers/ESHSUPERTR/assets/child.svg"
     },
     "onoff.heat": {
       "type": "boolean",
+      "uiComponent": "sensor",
+      "uiQuickAction": false,
       "title": {
         "en": "Heating",
         "no": "Varmer"
@@ -249,19 +259,25 @@
         "en": "Heating",
         "no": "Varmer"
       },
-      "label": {
-        "true": {
-          "en": "Heating",
-          "no": "Varmer"
-        },
-        "false": {
-          "en": "Idle",
-          "no": "Inaktiv"
-        }
+      "titleTrue": {
+        "en": "Heating",
+        "no": "Varmer"
+      },
+      "titleFalse": {
+        "en": "Idle",
+        "no": "Inaktiv"
       },
       "getable": true,
       "setable": false,
-      "uiComponent": "sensor",
+      "insights": true,
+      "insightsTitleTrue": {
+        "en": "Heating",
+        "nl": "Varmer"
+      },
+      "insightsTitleFalse": {
+        "en": "Idle",
+        "nl": "Inaktiv"
+      },
       "icon": "/drivers/ESHSUPERTR/assets/heating.svg"
     },
     "temp_mode": {
