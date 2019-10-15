@@ -33,7 +33,7 @@ class ESHSUPERTR extends ZigBeeDevice {
 				get: '1043',
 				setParser: value => {
 					this.log(`onoff.childlock: setParser: ${value}`);
-					return value === 'locked' ? 1 : 0;
+					return value === 'locked';
 				},
 				reportParser: value => {
 					this.log(`onoff.childlock: reportParser: ${value}`);
