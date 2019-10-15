@@ -130,6 +130,22 @@ class ESHSUPERTR extends ZigBeeDevice {
 			},
 		});
 
+		// Power
+		this.registerCapability('measure_power', 'hvacThermostat', {
+			get: '1032',
+			reportParser: value => {
+				const parsedValue = Int16Array.from([value])[0];
+				this.log(`measure_power reportParser: ${value} -> ${parsedValue}`);
+				return parsedValue;
+			},
+			report: '1032',
+			getOpts: {
+				getOnLine: true,
+				getOnStart: true,
+				pollInterval: 60000,
+			},
+		});
+
 		//Att report listener - (disabled - use pollintarval - Poll i used since there is no way to set up att listemer to att 1033 without geting error)
 		/*this.registerAttrReportListener('hvacThermostat', '1033', 300, 600, 50, value => {
 			const parsedValue = Math.round((value / 100) * 10) / 10;
