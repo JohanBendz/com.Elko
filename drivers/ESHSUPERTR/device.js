@@ -6,189 +6,188 @@ const ZigBeeDevice = require('homey-meshdriver').ZigBeeDevice;
 
 class ESHSUPERTR extends ZigBeeDevice {
 
-	onMeshInit() {
-		this.enableDebug();
-		//this.printNode();
+  onMeshInit() {
+    this.enableDebug();
+    //this.printNode();
 
 
-			// Reads if Thermostat is heating or not
-			//Register capability
-			//Poll i used since there is no way to set up att listemer to att 1045 without geting error
-			this.registerCapability('onoff.heat', 'hvacThermostat', {
-				get: '1045',
-				reportParser: value => value === 1,
-				report: '1045',
-				getOpts: {
-					getOnLine: true,
-					getOnStart: true,
-					pollInterval: 10000,
-				},
-			});
+    // Reads if Thermostat is heating or not
+    //Register capability
+    //Poll i used since there is no way to set up att listemer to att 1045 without geting error
+    this.registerCapability('onoff.heat', 'hvacThermostat', {
+      get: '1045',
+      reportParser: value => value === 1,
+      report: '1045',
+      getOpts: {
+        getOnLine: true,
+        getOnStart: true,
+        pollInterval: 10000,
+      },
+    });
 
 
-			// Read childlock status
-			//Register capability
-			//Poll i used since there is no way to set up att listemer to att 1043 without geting error
-			this.registerCapability('onoff.childlock', 'hvacThermostat', {
-				get: '1043',
-				setParser: value => {
-					this.log(`onoff.childlock: setParser: ${value}`);
-					return value === 'locked';
-				},
-				reportParser: value => {
-					this.log(`onoff.childlock: reportParser: ${value}`);
-					return value === 1;
-				},
-				report: '1043',
-				getOpts: {
-					getOnLine: true,
-					getOnStart: true,
-					pollInterval: 600000,
-				},
-			});
+    // Read childlock status
+    //Register capability
+    //Poll i used since there is no way to set up att listemer to att 1043 without geting error
+    this.registerCapability('onoff.childlock', 'hvacThermostat', {
+      get: '1043',
+      setParser: value => {
+        this.log(`onoff.childlock: setParser: ${value}`);
+        return value === 'locked';
+      },
+      reportParser: value => {
+        this.log(`onoff.childlock: reportParser: ${value}`);
+        return value === 1;
+      },
+      report: '1043',
+      getOpts: {
+        getOnLine: true,
+        getOnStart: true,
+        pollInterval: 600000,
+      },
+    });
 
 
-		// Register target_temperature capability
-		// Setpoint of thermostat
-		this.registerCapability('target_temperature', 'hvacThermostat', {
-			set: 'occupiedHeatingSetpoint',
-			setParser(value) {
-					this.node.endpoints[0].clusters.hvacThermostat.write('occupiedHeatingSetpoint',
-						Math.round(value * 1000 / 10))
-						.then(res => {
-							this.log('write occupiedHeatingSetpoint: ', res);
-						})
-						.catch(err => {
-							this.error('Error write occupiedHeatingSetpoint: ', err);
-						});
-					return null;
-			},
+    // Register target_temperature capability
+    // Setpoint of thermostat
+    this.registerCapability('target_temperature', 'hvacThermostat', {
+      set: 'occupiedHeatingSetpoint',
+      setParser(value) {
+        this.node.endpoints[0].clusters.hvacThermostat.write('occupiedHeatingSetpoint',
+          Math.round(value * 1000 / 10))
+          .then(res => {
+            this.log('write occupiedHeatingSetpoint: ', res);
+          })
+          .catch(err => {
+            this.error('Error write occupiedHeatingSetpoint: ', err);
+          });
+        return null;
+      },
 
-			get: 'occupiedHeatingSetpoint',
-			reportParser(value) {
-				return Math.round((value / 100) * 10) / 10;
-			},
-			report: 'occupiedHeatingSetpoint',
-			getOpts: {
-				getOnLine: true,
-				getOnStart: true,
-			},
-		});
+      get: 'occupiedHeatingSetpoint',
+      reportParser(value) {
+        return Math.round((value / 100) * 10) / 10;
+      },
+      report: 'occupiedHeatingSetpoint',
+      getOpts: {
+        getOnLine: true,
+        getOnStart: true,
+      },
+    });
 
-		// reportlisteners for the occupiedHeatingSetpoint
-		this.registerAttrReportListener('hvacThermostat', 'occupiedHeatingSetpoint', 1, 60, 1, data => {
-			const parsedValue = Math.round((data / 100) * 10) / 10;
-			this.log('Att listener occupiedHeatingSetpoint: ', data, parsedValue);
-			this.setCapabilityValue('target_temperature', parsedValue);
-		}, 0);
+    // reportlisteners for the occupiedHeatingSetpoint
+    this.registerAttrReportListener('hvacThermostat', 'occupiedHeatingSetpoint', 1, 60, 1, data => {
+      const parsedValue = Math.round((data / 100) * 10) / 10;
+      this.log('Att listener occupiedHeatingSetpoint: ', data, parsedValue);
+      this.setCapabilityValue('target_temperature', parsedValue);
+    }, 0);
 
 
+    // Air Temperature
+    // Register capability
+    this.registerCapability('measure_temperature.air', 'hvacThermostat', {
+      get: 'localTemp',
+      reportParser: value => this.updateTemperature(value, 0),
+      report: 'localTemp',
+      getOpts: {
+        getOnLine: true,
+        getOnStart: true,
+        pollInterval: 600000,
+      },
+    });
 
-		// Air Temperature
-		// Register capability
-		this.registerCapability('measure_temperature.air', 'hvacThermostat', {
-			get: 'localTemp',
-			reportParser: value => this.updateTemperature(value, 0),
-			report: 'localTemp',
-			getOpts: {
-				getOnLine: true,
-				getOnStart: true,
-				pollInterval: 600000,
-			},
-		});
-
-		//Att report listener - (disabled - use pollintarval to match floor temp)
-		/*this.registerAttrReportListener('hvacThermostat', 'localTemp', 300, 600, 50, value => {
-			const parsedValue = Math.round((value / 100) * 10) / 10;
-			this.log('Att listener - Air temperature: ', value, parsedValue);
-			this.setCapabilityValue('measure_temperature.air', parsedValue);
-		}, 0);
+    //Att report listener - (disabled - use pollintarval to match floor temp)
+    /*this.registerAttrReportListener('hvacThermostat', 'localTemp', 300, 600, 50, value => {
+      const parsedValue = Math.round((value / 100) * 10) / 10;
+      this.log('Att listener - Air temperature: ', value, parsedValue);
+      this.setCapabilityValue('measure_temperature.air', parsedValue);
+    }, 0);
 */
 
-		// Floor Temperature
-		//Register capability
-		this.registerCapability('measure_temperature.floor', 'hvacThermostat', {
-			get: '1033',
-			reportParser: value => this.updateTemperature(value, 1),
-			report: '1033',
-			getOpts: {
-				getOnLine: true,
-				getOnStart: true,
-				pollInterval: 600000,
-			},
-		});
+    // Floor Temperature
+    //Register capability
+    this.registerCapability('measure_temperature.floor', 'hvacThermostat', {
+      get: '1033',
+      reportParser: value => this.updateTemperature(value, 1),
+      report: '1033',
+      getOpts: {
+        getOnLine: true,
+        getOnStart: true,
+        pollInterval: 600000,
+      },
+    });
 
-		// Temperature mode
-		this.registerCapability("temp_mode", "hvacThermostat", {
-			get: "1027",
-			reportParser: value => this.updateTempMode(value),
-			report: "1027",
-			getOpts: {
-				getOnLine: true,
-				getOnStart: true,
-				pollInterval: 600000,
-			},
-		});
+    // Temperature mode
+    this.registerCapability("temp_mode", "hvacThermostat", {
+      get: "1027",
+      reportParser: value => this.updateTempMode(value),
+      report: "1027",
+      getOpts: {
+        getOnLine: true,
+        getOnStart: true,
+        pollInterval: 600000,
+      },
+    });
 
-		// Power
-		this.registerCapability('measure_power', 'hvacThermostat', {
-			get: '1032',
-			reportParser: value => {
-				const parsedValue = Int16Array.from([value])[0];
-				this.log(`measure_power reportParser: ${value} -> ${parsedValue}`);
-				return parsedValue;
-			},
-			report: '1032',
-			getOpts: {
-				getOnLine: true,
-				getOnStart: true,
-				pollInterval: 60000,
-			},
-		});
+    // Power
+    this.registerCapability('measure_power', 'hvacThermostat', {
+      get: '1032',
+      reportParser: value => {
+        const parsedValue = Int16Array.from([value])[0];
+        this.log(`measure_power reportParser: ${value} -> ${parsedValue}`);
+        return parsedValue;
+      },
+      report: '1032',
+      getOpts: {
+        getOnLine: true,
+        getOnStart: true,
+        pollInterval: 60000,
+      },
+    });
 
-		//Att report listener - (disabled - use pollintarval - Poll i used since there is no way to set up att listemer to att 1033 without geting error)
-		/*this.registerAttrReportListener('hvacThermostat', '1033', 300, 600, 50, value => {
-			const parsedValue = Math.round((value / 100) * 10) / 10;
-			this.log('Att listener - Floor temperature: ', value, parsedValue);
-			this.setCapabilityValue('measure_temperature.floor', parsedValue);
-		}, 0);
+    //Att report listener - (disabled - use pollintarval - Poll i used since there is no way to set up att listemer to att 1033 without geting error)
+    /*this.registerAttrReportListener('hvacThermostat', '1033', 300, 600, 50, value => {
+      const parsedValue = Math.round((value / 100) * 10) / 10;
+      this.log('Att listener - Floor temperature: ', value, parsedValue);
+      this.setCapabilityValue('measure_temperature.floor', parsedValue);
+    }, 0);
 */
 
-		new Homey.FlowCardAction('set_child_lock')
-			.register()
-			.registerRunListener((args, state) => {
-				args.device.log(`set_child_lock triggered for ${args.device.getName()}: set child lock to: ${args.child_lock}`);
-				return args.device.setCapabilityValue("onoff.childlock", args.child_lock);
-			});
+    new Homey.FlowCardAction('set_child_lock')
+      .register()
+      .registerRunListener((args, state) => {
+        args.device.log(`set_child_lock triggered for ${args.device.getName()}: set child lock to: ${args.child_lock}`);
+        return args.device.setCapabilityValue("onoff.childlock", args.child_lock);
+      });
 
-	}
+  }
 
-	async updateTemperature(value, temp_mode) {
-		const temperature = value > -5000 ? Math.round((value / 100) * 10) / 10 : null;
-		if (this.hasCapability("temp_mode") &&
-			this.hasCapability("measure_temperature") &&
-			this.getCapabilityValue("temp_mode") === temp_mode) {
-			this.log(`updateTemperature: temp_mode: ${temp_mode} -> temp: ${temperature}`);
-			await this.setCapabilityValue('measure_temperature', temperature).catch(console.error);
-		}
-		return temperature;
-	}
+  async updateTemperature(value, temp_mode) {
+    const temperature = value > -5000 ? Math.round((value / 100) * 10) / 10 : null;
+    if (this.hasCapability("temp_mode") &&
+      this.hasCapability("measure_temperature") &&
+      this.getCapabilityValue("temp_mode") === temp_mode) {
+      this.log(`updateTemperature: temp_mode: ${temp_mode} -> temp: ${temperature}`);
+      await this.setCapabilityValue('measure_temperature', temperature).catch(console.error);
+    }
+    return temperature;
+  }
 
-	async updateTempMode(temp_mode) {
-		if (this.hasCapability("temp_mode") &&
-			this.hasCapability("measure_temperature")) {
-			const airTemp = this.getCapabilityValue("measure_temperature.air");
-			const floorTemp = this.getCapabilityValue("measure_temperature.floor");
-			if (temp_mode === 0 || temp_mode === 3) {
-				this.log(`updateTempMode: temp_mode: ${temp_mode} -> air temp: ${airTemp}`);
-				await this.setCapabilityValue('measure_temperature', airTemp).catch(console.error);
-			} else if (temp_mode === 1) {
-				this.log(`updateTempMode: temp_mode: ${temp_mode} -> floor temp: ${floorTemp}`);
-				await this.setCapabilityValue('measure_temperature', floorTemp).catch(console.error);
-			}
-		}
-		return temp_mode;
-	}
+  async updateTempMode(temp_mode) {
+    if (this.hasCapability("temp_mode") &&
+      this.hasCapability("measure_temperature")) {
+      const airTemp = this.getCapabilityValue("measure_temperature.air");
+      const floorTemp = this.getCapabilityValue("measure_temperature.floor");
+      if (temp_mode === 0 || temp_mode === 3) {
+        this.log(`updateTempMode: temp_mode: ${temp_mode} -> air temp: ${airTemp}`);
+        await this.setCapabilityValue('measure_temperature', airTemp).catch(console.error);
+      } else if (temp_mode === 1) {
+        this.log(`updateTempMode: temp_mode: ${temp_mode} -> floor temp: ${floorTemp}`);
+        await this.setCapabilityValue('measure_temperature', floorTemp).catch(console.error);
+      }
+    }
+    return temp_mode;
+  }
 
 }
 
