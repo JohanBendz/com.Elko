@@ -11,10 +11,11 @@ Add support for Elko SmartHome to the Athom Homey
 - **ESH Super TR RF PH** - Thermostat
   http://proff.elko.no/elko-smart-home-super-termostat/esh-plus-super-tr-rf-ph-article2629-1779.html
   - Read floor and air temp
-  - Read Thermostat mode
-  - Read/Write Thermostat set temp
+  - Read Thermostat mode (Air/Floor-sensor, Floor Guard)
+  - Read/Set Thermostat set temp
   - Read Heating status
-  - Read Child lock status
+  - Read/Set Child lock status (Set thrugh flows)
+  - Read Power load (Average last 5 minuttes)
 
 
 ## Plan for support:
@@ -41,6 +42,7 @@ Add support for Elko SmartHome to the Athom Homey
 - If thermostat does not have a floor sensor connected the value is now blanked out (not -99,9c anymore)
 - Heating and Child lock status is now moved from buttons to sensor screen
 - Child lock can now be set through Flow card
+- Power load is now reported in 5 minutt intervals with average load
 - (Thanks to Bjørnar Almli for help with this update)
 
 ## Version: 0.0.5
