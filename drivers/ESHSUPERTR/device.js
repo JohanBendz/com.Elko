@@ -13,7 +13,7 @@ class ESHSUPERTR extends ZigBeeDevice {
 
     // Reads if Thermostat is heating or not
     //Poll i used since there is no way to set up att listemer to att 1045 without geting error
-    this.registerCapability('onoff.heat', 'hvacThermostat', {
+    this.registerCapability('heat', 'hvacThermostat', {
       get: '1045',
       reportParser: value => value === 1,
       report: '1045',
@@ -26,11 +26,35 @@ class ESHSUPERTR extends ZigBeeDevice {
 
     // Read childlock status
     //Poll i used since there is no way to set up att listemer to att 1043 without geting error
-    this.registerCapability('onoff.childlock', 'hvacThermostat', {
+    this.registerCapability('childlock', 'hvacThermostat', {
+/*      set: '1043',
+      setParser(value) {
+        this.node.endpoints[0].clusters.hvacThermostat.write('1043',
+        value => value ? 1 : 0)
+        .then(res => {
+          this.log('write Childlock: ', res);
+        })
+        .catch(err => {
+          this.error('Error write Childlock: ', err);
+        });
+      return null;
+    },*/
       get: '1043',
-      setParser: value => value ? 1 : 0,
       reportParser: value => value === 1,
       report: '1043',
+      getOpts: {
+        getOnLine: true,
+        getOnStart: true,
+        pollInterval: 600000,
+      },
+    });
+
+    // Read Thermostat mode (Thermostat/Regulator)
+    //Poll i used since there is no way to set up att listemer to att 1029 without geting error
+    this.registerCapability('thermostat_mode', 'hvacThermostat', {
+      get: '1029',
+      reportParser: value => value === 1,
+      report: '1029',
       getOpts: {
         getOnLine: true,
         getOnStart: true,
@@ -107,6 +131,23 @@ class ESHSUPERTR extends ZigBeeDevice {
       },
     });
 
+    // Thermostat mode
+/*
+    this.registerCapability("thermostat_mode", "hvacThermostat", {
+      get: "1029",
+      reportParser: value => {
+        const parsedValue = value;
+        this.log(`Thermostat mode: ${value}`);
+      },
+      report: "1029",
+      getOpts: {
+        getOnLine: true,
+        getOnStart: true,
+        pollInterval: 600000,
+      },
+    });
+*/
+
     // Power
     this.registerCapability('measure_power', 'hvacThermostat', {
       get: '1032',
@@ -119,16 +160,35 @@ class ESHSUPERTR extends ZigBeeDevice {
       getOpts: {
         getOnLine: true,
         getOnStart: true,
-        pollInterval: 60000,
+        pollInterval: 600000,
       },
     });
 
-    new Homey.FlowCardAction('set_child_lock')
+/*    new Homey.FlowCardAction('set_child_lock')
       .register()
       .registerRunListener((args, state) => {
         args.device.log(`set_child_lock triggered for ${args.device.getName()}: set child lock to: ${args.child_lock}`);
-        return args.device.setCapabilityValue("onoff.childlock", args.child_lock === 'locked');
+        return args.device.triggerCapabilityListener('onoff.childlock', args.child_lock === 'locked', {});
       });
+*/
+
+// Power_meter
+this.registerCapability('meter_power', 'hvacThermostat', {
+  get: '1032',
+  reportParser: value => {
+    const parsedValue = this.getCapabilityValue('meter_power') + (((Int16Array.from([value])[0])/6)/1000);
+    this.log(`measure_power reportParser: ${value} -> ${parsedValue}`);
+    return parsedValue;
+  },
+  report: '1032',
+  getOpts: {
+    getOnLine: true,
+    getOnStart: true,
+    pollInterval: 600000,
+  },
+});
+
+
 
   }
 
@@ -186,8 +246,8 @@ module.exports = ESHSUPERTR;
 //2018-08-13 20:00:46 [log] [ManagerDrivers] [ESHSUPERTR] [0] ---- 1026 : Gang 		\\(encoding:42, value: <verified sonetext as hexstring>
 //2018-08-13 20:00:46 [log] [ManagerDrivers] [ESHSUPERTR] [0] ---- 1027 : 0 			\\(encoding:30, value: <verified 00=luftføler, 01=gulvføler, 03=gulv vakt>
 //2018-08-13 20:00:46 [log] [ManagerDrivers] [ESHSUPERTR] [0] ---- 1028 : 15 					\\(encoding:20 value:0f for all termostats)
-//2018-08-13 20:00:46 [log] [ManagerDrivers] [ESHSUPERTR] [0] ---- 1029 : 0 					\\(encoding:10 value:0 for all termostats)
-//2018-08-13 20:00:46 [log] [ManagerDrivers] [ESHSUPERTR] [0] ---- 1030 : 1 					\\(encoding:10 value:01 for all termostats)
+//2018-08-13 20:00:46 [log] [ManagerDrivers] [ESHSUPERTR] [0] ---- 1029 : 0 					\\value:0=thermostat mode 1=regulator mode
+//2018-08-13 20:00:46 [log] [ManagerDrivers] [ESHSUPERTR] [0] ---- 1030 : 1 					\\value:01=device on ??=device off)
 //2018-08-13 20:00:46 [log] [ManagerDrivers] [ESHSUPERTR] [0] ---- 1031 : 						\\(encoding:41 value:00 for all termostats) unhandled length warning)
 //2018-08-13 20:00:46 [log] [ManagerDrivers] [ESHSUPERTR] [0] ---- 1032 : 0 			\\(encoding:21 value: floating values ex: 001a, 01a9, 01dd, 0000, 0087 <- probably power consumption
 //2018-08-13 20:00:46 [log] [ManagerDrivers] [ESHSUPERTR] [0] ---- 1033 : -9990		\\(encoding:29 value: <verified floor temperature sensor measurement>
