@@ -160,7 +160,7 @@ class ESHSUPERTR extends ZigBeeDevice {
       getOpts: {
         getOnLine: true,
         getOnStart: true,
-        pollInterval: 600000,
+        pollInterval: 60000,
       },
     });
 
@@ -176,7 +176,7 @@ class ESHSUPERTR extends ZigBeeDevice {
 this.registerCapability('meter_power', 'hvacThermostat', {
   get: '1032',
   reportParser: value => {
-    const parsedValue = this.getCapabilityValue('meter_power') + (((Int16Array.from([value])[0])/6)/1000);
+    const parsedValue = this.getCapabilityValue('meter_power') + (((Int16Array.from([value])[0])/60)/1000);
     this.log(`measure_power reportParser: ${value} -> ${parsedValue}`);
     return parsedValue;
   },
@@ -184,7 +184,7 @@ this.registerCapability('meter_power', 'hvacThermostat', {
   getOpts: {
     getOnLine: true,
     getOnStart: true,
-    pollInterval: 600000,
+    pollInterval: 60000,
   },
 });
 
