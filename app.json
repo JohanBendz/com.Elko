@@ -51,44 +51,6 @@
       }
     }
   },
-  "flow": {
-    "actions": [
-      {
-        "id": "set_child_lock",
-        "title": {
-          "en": "Set child lock",
-          "no": "Sett barnesikkring"
-        },
-        "args": [
-          {
-            "name": "device",
-            "type": "device",
-            "filter": "driver_id=ESHSUPERTR"
-          },
-          {
-            "type": "dropdown",
-            "name": "child_lock",
-            "values": [
-              {
-                "id": "unlocked",
-                "label": {
-                  "en": "Unlocked",
-                  "no": "Ulåst"
-                }
-              },
-              {
-                "id": "locked",
-                "label": {
-                  "en": "Locked",
-                  "no": "Låst"
-                }
-              }
-            ]
-          }
-        ]
-      }
-    ]
-  },
   "drivers": [
     {
       "id": "ESH316GLED",
@@ -115,7 +77,7 @@
           "image": "/drivers/ESH316GLED/assets/include.svg",
           "instruction": {
             "en": "Click on and hold dimmer wheel 1. and pushbutton 2. Until green LED 3. flashes. Wait for Homey to list device",
-            "no": "Klikk og hold dimmerhjulet 1. og knapp 2. inntil den grønnt lys 3, blinker. Vent på at Homey lister enheten"
+            "no": "Klikk og hold dimmerhjulet (1.) og knapp (2.) inntil det grønne lyset (3.), blinker. Vent på at Homey legger til enheten"
           }
         }
       },
@@ -138,14 +100,15 @@
         "measure_temperature.floor",
         "measure_power",
         "meter_power",
-        "onoff.childlock",
-        "onoff.heat",
-        "temp_mode"
+        "childlock",
+        "heat",
+        "temp_mode",
+        "thermostat_mode"
       ],
       "capabilitiesOptions": {
         "target_temperature": {
-          "min": 5,
-          "max": 50,
+          "min": 0,
+          "max": 100,
           "step": 0.5
         },
         "measure_temperature.air": {
@@ -171,15 +134,15 @@
           {
             "id": "sensor",
             "capabilities": [
-              "onoff.heat",
+              "heat",
               "measure_temperature.air",
               "measure_temperature.floor",
-              "onoff.childlock"
+              "childlock"
             ],
             "options": {
               "icons": {
-                "onoff.heat": "/drivers/ESHSUPERTR/assets/heating.svg",
-                "onoff.childlock": "/drivers/ESHSUPERTR/assets/child.svg"
+                "heat": "/drivers/ESHSUPERTR/assets/heating.svg",
+                "childlock": "/drivers/ESHSUPERTR/assets/child.svg"
               },
               "showTitle": true
             }
@@ -203,7 +166,7 @@
           "image": "/drivers/ESHSUPERTR/assets/include.svg",
           "instruction": {
             "en": "Click on and hold arrow up and M Button (1) until joining/pairing is displayed. Wait for Homey to list device",
-            "no": "Klikk og hold pil opp og M knappen (1) inntil Joining/pairing vises i displayet. Vent på at Homey lister enheten"
+            "no": "Klikk og hold pil opp og M knappen (1.) inntil Joining/pairing vises i displayet. Vent på at Homey legger til enheten"
           }
         }
       },
@@ -214,7 +177,7 @@
     }
   ],
   "capabilities": {
-    "onoff.childlock": {
+    "childlock": {
       "type": "boolean",
       "uiComponent": "sensor",
       "uiQuickAction": false,
@@ -235,7 +198,7 @@
         "no": "Deaktivert"
       },
       "getable": true,
-      "setable": true,
+      "setable": false,
       "insights": true,
       "insightsTitleTrue": {
         "en": "Locked",
@@ -247,7 +210,7 @@
       },
       "icon": "/drivers/ESHSUPERTR/assets/child.svg"
     },
-    "onoff.heat": {
+    "heat": {
       "type": "boolean",
       "uiComponent": "sensor",
       "uiQuickAction": false,
@@ -290,6 +253,17 @@
       "setable": false,
       "insights": false,
       "uiComponent": null
-    }
+    },
+    "thermostat_mode": {
+      "type": "number",
+      "title": {
+        "en": "Thermostat mode",
+        "no": "Termostat modus"
+      },
+      "getable": true,
+      "setable": false,
+      "insights": false,
+      "uiComponent": null
   }
+}
 }
