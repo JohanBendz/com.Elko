@@ -1,0 +1,34 @@
+Backup:
+
+app.json:
+---------------------------------------------------------
+Settings under Termostat - legges til når det kan skrives til udefinerte atributter
+---------------------------------------------------------
+{
+  "id": "thermostat_calibration",
+  "type": "number",
+  "label": {
+    "en": "Thermostat Calibration",
+    "no": "Termostat kalibrering"
+  },
+  "value": 0,
+  "min": -100,
+  "max": 100,
+  "units": "°C"
+},
+{
+  "id": "regulator_time",
+"type": "number",
+"label": {
+"en": "Regulator On/Off time",
+"no": "Regulator Av/På tid"
+},
+"value": 1,
+"min": 1,
+"max": 20,
+"units": "min",
+"hint": {
+    "en": "The time between each in / out connection when measured temperature is within + -0.5°C relative to set temperature. Choose a long time for (slow) concrete floors and a short time (quick) hardwood floors",
+    "no": "Tiden mellom av og påslag når temperaturen er + -0.5°C innen ønsket temperatur. Velg lang tid for betonggulv og kort tid for tregulv"
+  }
+}
