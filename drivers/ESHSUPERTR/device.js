@@ -1,7 +1,6 @@
 'use strict';
 
 const Homey = require('homey');
-
 const ZigBeeDevice = require('homey-meshdriver').ZigBeeDevice;
 
 class ESHSUPERTR extends ZigBeeDevice {
@@ -9,8 +8,146 @@ class ESHSUPERTR extends ZigBeeDevice {
   onMeshInit() {
     this.enableDebug();
     //this.printNode();
+    this.setAvailable();
+    const settings = this.getSettings();
+    const floor_watt = settings.floor_watt;
+
+//----------------------------------------------------------------------------------------------------------------------------------------------
+
+    //Adds new capabilities to existing users
+    this.addCapability('temp_mode');
+    this.addCapability('thermostat_load');
+    this.addCapability('night_mode');
+    this.addCapability('frost_guard');
+    this.addCapability('operating_mode');
+    this.addCapability("target_temperature");
+    this.addCapability("measure_temperature");
+    this.addCapability("dim.regulator");
+    this.addCapability('temp_calibration');
+    this.addCapability('regulator_time');
+    this.addCapability('date_time');
+    this.addCapability('max_floor_temp');
+    this.addCapability('button.reset_operating_mode');
+    this.addCapability('button.reset_kwh_meter');
+
+    this.removeCapability('display_text');
+
+//----------------------------------------------------------------------------------------------------------------------------------------------
+    //Set Thermostat Heating Cable effect
+    //Write/Read heating cable effect setting
+    //Code ready to write cable effect when zigbee core is fixed
+    this.registerCapability('thermostat_load', 'hvacThermostat', {
+    /*  set: '1025',
+      setParser(value) {
+        this.node.endpoints[0].clusters.hvacThermostat.write('1025',
+          value => value)
+          .then(result => {
+            this.log('Write thermostat_load: ', result);
+          })
+          .catch(err => {
+            this.error('Error write thermostat_load: ', err);
+          });
+        return null;
+      },*/
+      get: '1025',
+      reportParser: value => value,
+      report: '1025',
+      getOpts: {
+        getOnLine: true,
+        getOnStart: true
+      },
+    });
+
+    /* activate this when write is ok
+    this.setSettings({
+        floor_watt: (this.getCapabilityValue('thermostat_load')),
+    })
+    .catch( this.error );
+    */
 
 
+  //------------------------------------------------------------------------------------------------------------------------------------------------------
+  //Set Thermostat temperature calibration
+  //write/Read Thermostat temperature calibration
+  // Code ready to write temperature calibration when zigbee core is fixed
+    this.registerCapability('temp_calibration', 'hvacThermostat', {
+  /*    set: '1047',
+      setParser(value) {
+        this.node.endpoints[0].clusters.hvacThermostat.write('1047',
+          Int8Array.from([value])[0])  //test (value)
+          .then(result => {
+            this.log('Write temp calibration: ', result);
+          })
+          .catch(err => {
+            this.error('Error write temp calibration: ', err);
+          });
+          return null;
+        },*/
+        get: '1047',
+        reportParser: value => value,
+        report: '1047',
+        getOpts: {
+          getOnLine: true,
+          getOnStart: true
+        },
+      });
+
+      /*
+      this.setSettings({
+        thermostat_calibration: (this.getCapabilityValue('temp_calibration')),
+      })
+      .catch( this.error );
+      */
+
+
+//------------------------------------------------------------------------------------------------------------------------------------------------------
+
+  //Set Regulator time
+  //write/Read regulator time
+  //Code ready to write regulator time when zigbee core is fixed
+    this.registerCapability('regulator_time', 'hvacThermostat', {
+      /*set: '1028',
+      setParser(value) {
+        this.node.endpoints[0].clusters.hvacThermostat.write('1028',
+        value)
+        .then(result => {
+          this.log('Write Regulator time: ', result);
+        })
+        .catch(err => {
+          this.error('Error write Regulator time: ', err);
+        });
+        return null;
+      },*/
+      get: '1028',
+      reportParser: value => value,
+      report: '1028',
+      getOpts: {
+        getOnLine: true,
+        getOnStart: true,
+      },
+    });
+
+    /*
+    this.setSettings({
+      regulator_time: (this.getCapabilityValue('regulator_time')),
+    })
+    .catch( this.error );
+    */
+
+//------------------------------------------------------------------------------------------------------------------------------------------------------
+  //display_text
+  //Read display_text
+      this.registerCapability('display_text', 'hvacThermostat', {
+      get: '1026',
+      reportParser: value => Buffer.from(value, 'hex').toString('utf/8'),
+      report: '1026',
+      getOpts: {
+        getOnLine: true,
+        getOnStart: true
+      },
+    });
+
+//------------------------------------------------------------------------------------------------------------------------------------------------------
     // Reads if Thermostat is heating or not
     //Poll i used since there is no way to set up att listemer to att 1045 without geting error
     this.registerCapability('heat', 'hvacThermostat', {
@@ -24,12 +161,15 @@ class ESHSUPERTR extends ZigBeeDevice {
       },
     });
 
+//------------------------------------------------------------------------------------------------------------------------------------------------------
+
     // Read childlock status
     //Poll i used since there is no way to set up att listemer to att 1043 without geting error
+    //Code ready to write regulator time when zigbee core is fixed
     this.registerCapability('childlock', 'hvacThermostat', {
-/*      set: '1043',
+     /*set: '1043',
       setParser(value) {
-        this.node.endpoints[0].clusters.hvacThermostat.write('1043',
+        this.node.endpoints[0].clusters.hvacThermostat.write(0x0413,
         value => value ? 1 : 0)
         .then(res => {
           this.log('write Childlock: ', res);
@@ -45,16 +185,46 @@ class ESHSUPERTR extends ZigBeeDevice {
       getOpts: {
         getOnLine: true,
         getOnStart: true,
-        pollInterval: 600000,
+        pollInterval: 600000
       },
     });
 
-    // Read Thermostat mode (Thermostat/Regulator)
+//------------------------------------------------------------------------------------------------------------------------------------------------------
+
+    // Read if Thermostat is in Regulator mode (Thermostat/Regulator) (FALSE/TRUE)
     //Poll i used since there is no way to set up att listemer to att 1029 without geting error
-    this.registerCapability('thermostat_mode', 'hvacThermostat', {
+    this.registerCapability('operating_mode', 'hvacThermostat', {
       get: '1029',
-      reportParser: value => value === 1,
+      reportParser: value => this.onUpdateMode(value),
       report: '1029',
+        getOpts: {
+        getOnLine: true,
+        getOnStart: true,
+        pollInterval: 600000
+      },
+    });
+
+//------------------------------------------------------------------------------------------------------------------------------------------------------
+
+    //Set/Read Thermostat night mode
+    //Poll i used since there is no way to set up att listemer to att 1034 without geting error
+    //Code ready to write night mode when zigbee core is fixed
+    this.registerCapability('night_mode', 'hvacThermostat', {
+      /*set: '1034',
+        setParser(value) {
+          this.node.endpoints[0].clusters.hvacThermostat.write('1034',
+          value => value ? 1 : 0)
+          .then(res => {
+            this.log('Nightmode: ', res);
+          })
+          .catch(err => {
+            this.error('Error write Nightmode: ', err);
+          });
+        return null;
+      },*/
+      get: '1034',
+      reportParser: value => value === 1,
+      report: '1034',
       getOpts: {
         getOnLine: true,
         getOnStart: true,
@@ -62,12 +232,72 @@ class ESHSUPERTR extends ZigBeeDevice {
       },
     });
 
+//------------------------------------------------------------------------------------------------------------------------------------------------------
+
+//Set/Read Thermostat frost guard
+//Poll i used since there is no way to set up att listemer to att 1035 without geting error
+//Code ready to write regulator time when zigbee core is fixed
+    this.registerCapability('frost_guard', 'hvacThermostat', {
+    /*set: '1035',
+      setParser(value) {
+        this.node.endpoints[0].clusters.hvacThermostat.write('1035',
+        value => value ? 1 : 0)
+        .then(res => {
+          this.log('Nightmode: ', res);
+        })
+        .catch(err => {
+          this.error('Error write Nightmode: ', err);
+        });
+        return null;
+      },*/
+      get: '1035',
+      reportParser: value => value === 1,
+      report: '1035',
+      getOpts: {
+        getOnLine: true,
+        getOnStart: true,
+        pollInterval: 600000,
+      },
+    });
+
+//------------------------------------------------------------------------------------------------------------------------------------------------------
+
+    //Set/Read Max floor temp with floor guard
+    //Poll i used since there is no way to set up att listemer to att 1034 without geting error
+    //Code ready to write regulator time when zigbee core is fixed
+    this.registerCapability('max_floor_temp', 'hvacThermostat', {
+      /*set: '1044',
+        setParser(value) {
+          this.node.endpoints[0].clusters.hvacThermostat.write('1044',
+          value => value ? 1 : 0)
+          .then(res => {
+            this.log('Nightmode: ', res);
+          })
+          .catch(err => {
+            this.error('Error write Nightmode: ', err);
+          });
+        return null;
+      },*/
+      get: '1044',
+      reportParser: value => value,
+      report: '1044',
+      getOpts: {
+        getOnLine: true,
+        getOnStart: true,
+        pollInterval: 600000,
+      },
+    });
+
+//------------------------------------------------------------------------------------------------------------------------------------------------------
+
+    // Set point with temperature wheel
+
     // Setpoint of thermostat
     this.registerCapability('target_temperature', 'hvacThermostat', {
       set: 'occupiedHeatingSetpoint',
       setParser(value) {
         this.node.endpoints[0].clusters.hvacThermostat.write('occupiedHeatingSetpoint',
-          Math.round(value * 1000 / 10))
+          Math.round(value * 100))
           .then(res => {
             this.log('write occupiedHeatingSetpoint: ', res);
           })
@@ -88,12 +318,49 @@ class ESHSUPERTR extends ZigBeeDevice {
       },
     });
 
-    // reportlisteners for the occupiedHeatingSetpoint
-    this.registerAttrReportListener('hvacThermostat', 'occupiedHeatingSetpoint', 1, 60, 1, data => {
-      const parsedValue = Math.round((data / 100) * 10) / 10;
-      this.log('Att listener occupiedHeatingSetpoint: ', data, parsedValue);
-      this.setCapabilityValue('target_temperature', parsedValue);
-    }, 0);
+        // Set point with dim %
+        // Setpoint of regulator
+    this.registerCapability('dim.regulator', 'hvacThermostat', {
+        set: 'occupiedHeatingSetpoint',
+        setParser(value) {
+            this.node.endpoints[0].clusters.hvacThermostat.write('occupiedHeatingSetpoint',
+            Math.round(value * 10000 / 10)*10)
+            .then(res => {
+              this.log('write occupiedHeatingSetpoint: ', res);
+            })
+            .catch(err => {
+              this.error('Error write occupiedHeatingSetpoint: ', err);
+            });
+            return null;
+        },
+
+        get: 'occupiedHeatingSetpoint',
+        reportParser(value) {
+          return Math.round((value / 100) * 10) / 10;
+        },
+        report: 'occupiedHeatingSetpoint',
+        getOpts: {
+          getOnLine: true,
+          getOnStart: true,
+        },
+      });
+
+        // reportlisteners for the occupiedHeatingSetpoint
+      this.registerAttrReportListener('hvacThermostat', 'occupiedHeatingSetpoint', 1, 60, 1, data => {
+
+        if(this.getCapabilityValue("operating_mode") === 0) {
+          let parsedValue = Math.round((data / 100) * 10) / 10;
+          this.log('Att listener occupiedHeatingSetpoint from target_temperature: ', data, parsedValue);
+          this.setCapabilityValue('target_temperature', parsedValue).catch(console.error);
+        } else if (this.getCapabilityValue("operating_mode") === 1) {
+          let parsedValue = (data / 10000);
+          this.log('Att listener occupiedHeatingSetpoint from dim.regulator: ', data, parsedValue);
+          this.setCapabilityValue('dim.regulator', parsedValue).catch(console.error);
+        }
+        return data;
+       }, 0);
+
+//------------------------------------------------------------------------------------------------------------------------------------------------------
 
     // Air Temperature
     this.registerCapability('measure_temperature.air', 'hvacThermostat', {
@@ -107,6 +374,8 @@ class ESHSUPERTR extends ZigBeeDevice {
       },
     });
 
+//------------------------------------------------------------------------------------------------------------------------------------------------------
+
     // Floor Temperature
     this.registerCapability('measure_temperature.floor', 'hvacThermostat', {
       get: '1033',
@@ -118,6 +387,8 @@ class ESHSUPERTR extends ZigBeeDevice {
         pollInterval: 600000,
       },
     });
+
+//------------------------------------------------------------------------------------------------------------------------------------------------------
 
     // Temperature mode
     this.registerCapability("temp_mode", "hvacThermostat", {
@@ -131,31 +402,16 @@ class ESHSUPERTR extends ZigBeeDevice {
       },
     });
 
-    // Thermostat mode
-/*
-    this.registerCapability("thermostat_mode", "hvacThermostat", {
-      get: "1029",
-      reportParser: value => {
-        const parsedValue = value;
-        this.log(`Thermostat mode: ${value}`);
-      },
-      report: "1029",
-      getOpts: {
-        getOnLine: true,
-        getOnStart: true,
-        pollInterval: 600000,
-      },
-    });
-*/
+//------------------------------------------------------------------------------------------------------------------------------------------------------
 
     // Power
     this.registerCapability('measure_power', 'hvacThermostat', {
       get: '1032',
-      reportParser: value => {
-        const parsedValue = Int16Array.from([value])[0];
-        this.log(`measure_power reportParser: ${value} -> ${parsedValue}`);
+      reportParser: value => this.onMeasurePowerReport(value),/*{
+        const parsedValue = (Math.round(((Int16Array.from([value])[0])/(this.getCapabilityValue('thermostat_load')))*(settings.floor_watt)));
+        this.log(`measure_power reportParser:  ${value} -> ${parsedValue}`);
         return parsedValue;
-      },
+      },*/
       report: '1032',
       getOpts: {
         getOnLine: true,
@@ -164,34 +420,42 @@ class ESHSUPERTR extends ZigBeeDevice {
       },
     });
 
-/*    new Homey.FlowCardAction('set_child_lock')
-      .register()
-      .registerRunListener((args, state) => {
-        args.device.log(`set_child_lock triggered for ${args.device.getName()}: set child lock to: ${args.child_lock}`);
-        return args.device.triggerCapabilityListener('onoff.childlock', args.child_lock === 'locked', {});
-      });
-*/
+//------------------------------------------------------------------------------------------------------------------------------------------------------
 
 // Power_meter
-this.registerCapability('meter_power', 'hvacThermostat', {
-  get: '1032',
-  reportParser: value => {
-    const parsedValue = this.getCapabilityValue('meter_power') + (((Int16Array.from([value])[0])/60)/1000);
-    this.log(`measure_power reportParser: ${value} -> ${parsedValue}`);
-    return parsedValue;
-  },
-  report: '1032',
-  getOpts: {
-    getOnLine: true,
-    getOnStart: true,
-    pollInterval: 60000,
-  },
-});
+    this.registerCapability('meter_power', 'hvacThermostat', {
+      get: '1032',
+      reportParser: value => this.onMeterPowerReport(value),/*{
+        const parsedValue = this.getCapabilityValue('meter_power') + ((Math.round(((Int16Array.from([value])[0])/(this.getCapabilityValue('thermostat_load')))*(floor_watt)))/60/1000);
+        this.log(`measure_power reportParser:  ${value} -> ${parsedValue}`);
+        return parsedValue;
+      },*/
+      report: '1032',
+      getOpts: {
+        getOnLine: true,
+        getOnStart: true,
+        pollInterval: 60000,
+      },
+    });
 
+//----------------------------------------------------------------------------------------------------------------------------------------------
+    //Reset of kwh counter
+    this.registerCapabilityListener('button.reset_kwh_meter', async () => {
+            this.setCapabilityValue('meter_power', 0);
+            return;
+    });
+//----------------------------------------------------------------------------------------------------------------------------------------------
+    //Reset operating mode to trigger capability changes
+    this.registerCapabilityListener('button.reset_operating_mode', async () => {
+        this.setCapabilityValue('operating_mode', null);
+        return;
+    });
 
-
+//------------------------------------------------------------------------------------------------------------------------------------------------------
   }
 
+
+  //If value is lower then -5000 then set null
   async updateTemperature(value, temp_mode) {
     const temperature = value > -5000 ? Math.round((value / 100) * 10) / 10 : null;
     if (this.hasCapability("temp_mode") &&
@@ -203,6 +467,7 @@ this.registerCapability('meter_power', 'hvacThermostat', {
     return temperature;
   }
 
+  //set measure_temperature based on sensor mode on thermostat ()
   async updateTempMode(temp_mode) {
     if (this.hasCapability("temp_mode") &&
       this.hasCapability("measure_temperature")) {
@@ -219,6 +484,106 @@ this.registerCapability('meter_power', 'hvacThermostat', {
     return temp_mode;
   }
 
+//------------------------------------------------------------------------------------------------------------------------------------------------------
+  //Refresh setting constant when user changes settings
+  async onSettings(oldSettingsObj, newSettingsObj, changedKeysArr, callback) {
+
+    this.log(changedKeysArr);
+    this.log('newSettingsObj', newSettingsObj);
+    this.log('oldSettingsObj', oldSettingsObj);
+    this.log('Load test: ', changedKeysArr.includes('floor_watt'));
+    // Thermostat load effect changed
+    if (changedKeysArr.includes('floor_watt')) {
+      this.log('Thermostat load changed: ', newSettingsObj.floor_watt);
+      callback(null, true);
+      var floor_watt = newSettingsObj.floor_watt;
+      this.log('New floor_watt setting is: ', floor_watt)
+    }
+  }
+
+  //------------------------------------------------------------------------------------------------------------------------------------------------------
+  //Calculates reported Watt with cable effect in settings (temp. fix untill att 1025 can be set)
+  async onMeasurePowerReport(value) {
+    const measure_power =  Math.round((Int16Array.from([value])[0])*((this.getSetting('floor_watt'))/(this.getCapabilityValue("thermostat_load"))));
+    		this.log('Measure_power_fix:', measure_power, 'floor_watt', this.getSetting('floor_watt'));
+		    await this.setCapabilityValue('measure_power', measure_power).catch(console.error);
+        return measure_power
+  }
+
+  //------------------------------------------------------------------------------------------------------------------------------------------------------
+//Calculates reported Watt to kw/h with cable effect in settings (temp. fix untill att 1025 can be set)
+  async onMeterPowerReport(value) {
+    const meter_power =  ((this.getCapabilityValue("meter_power")) + (Math.round((Int16Array.from([value])[0])*((this.getSetting('floor_watt'))/(this.getCapabilityValue("thermostat_load"))))/60/1000));
+    		this.log('Meter_power_fix:', meter_power, 'floor_watt', this.getSetting('floor_watt'));
+		    await this.setCapabilityValue('meter_power', meter_power).catch(console.error);
+        return meter_power
+  }
+
+//------------------------------------------------------------------------------------------------------------------------------------------------------
+//Defines mode and set the needed capability
+  onUpdateMode(value) {
+    this.setCapabilityValue('operating_mode', value);
+    if (value === 0) {
+      this.addCapability("target_temperature");
+      this.addCapability("measure_temperature");
+      this.removeCapability("dim.regulator");
+      this.log('Added target_temperature, removed dim.regulator')
+    } else if (value === 1) {
+      this.removeCapability("target_temperature");
+      this.removeCapability("measure_temperature");
+      this.addCapability("dim.regulator");
+      this.log('Added dim.regulator, removed target_temperature')
+    }
+  }
+
+  //when settings is changed it writes new value to attribute
+  //activate this when new zigbee core is released since it needs to write to undefined attributes
+      /*onSettings(oldSettingsObj, newSettingsObj, changedKeysArr, callback) {
+
+    		this.log(changedKeysArr);
+    		this.log('newSettingsObj', newSettingsObj);
+    		this.log('oldSettingsObj', oldSettingsObj);
+    		this.log('Load test: ', changedKeysArr.includes('floor_watt'));
+    		// Thermostat load effect changed
+    		if (changedKeysArr.includes('floor_watt')) {
+    			this.log('Thermostat load changed: ', newSettingsObj.floor_watt);
+    			callback(null, true);
+    			this.node.endpoints[0].clusters.hvacThermostat.write('1025', newSettingsObj.floor_watt)
+    				.then(result => {
+    					this.log('1025: ', result);
+    				})
+    				.catch(err => {
+    					this.log('could not write 1025');
+    					this.log(err);
+    				});
+    		}
+        this.log('calibration test: ', changedKeysArr.includes('thermostat_calibration'));
+        if (changedKeysArr.includes('thermostat_calibration')) {
+          this.log('Thermostat calibration: ', newSettingsObj.thermostat_calibration);
+          callback(null, true);
+          this.node.endpoints[0].clusters.hvacThermostat.write("1047", newSettingsObj.thermostat_calibration)
+            .then(result => {
+              this.log('1047: ', result);
+            })
+            .catch(err => {
+              this.log('could not write 1047');
+              this.log(err);
+            });
+        }
+        this.log('Regulator time test: ', changedKeysArr.includes('regulator_time'));
+        if (changedKeysArr.includes('regulator_time')) {
+          this.log('Regulator time: ', newSettingsObj.regulator_time);
+          callback(null, true);
+          this.node.endpoints[0].clusters.hvacThermostat.write("1028", newSettingsObj.regulator_time)
+            .then(result => {
+              this.log('1028: ', result);
+            })
+            .catch(err => {
+              this.log('could not write 1028');
+              this.log(err);
+            });
+        }
+    	}*/
 }
 
 module.exports = ESHSUPERTR;
