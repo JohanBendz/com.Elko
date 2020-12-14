@@ -1,76 +1,56 @@
 'use strict';
 
 const Homey = require('homey');
-const ZigBeeDevice = require('homey-meshdriver').ZigBeeDevice;
+const { ZigBeeLightDevice } = require('homey-zigbeedriver');
+const { ZCLNode, CLUSTER } = require('zigbee-clusters');
 
-const maxBrightness = 255;
+class ESH316GLED extends ZigBeeLightDevice {
 
-class ESH316GLED extends ZigBeeDevice {
+  async	onNodeInit({ zclNode }) {
+      //this.enableDebug();
+      //this.printNode();
+      this.setAvailable();
 
-
-  	// this method is called when the Device is inited
-  	onMeshInit() {
-      this.enableDebug();
-
-
-        		// register a capability listener
-        		this.registerCapabilityListener('onoff', this.onCapabilityOnoff.bind(this));
-            this.registerCapabilityListener('dim', this.onCapabilitydim.bind(this))
-
-
-        		//register att reportlisteners for onoff
-        		this.registerAttrReportListener('genOnOff', 'onOff', 2, 300, 1, value => {
-        			this.log('onoff', value);
-        			this.setCapabilityValue('onoff', value === 1);
-        		}, 0);
+      if (this.hasCapability('onoff')) {
+        this.registerCapability('onoff', CLUSTER.ON_OFF);
+        this.getClusterCapabilityValue('onoff', CLUSTER.ON_OFF);
+      }
+      if (this.hasCapability('dim')) {
+        this.registerCapability('dim', CLUSTER.LEVEL_CONTROL);
+        this.getClusterCapabilityValue('dim', CLUSTER.LEVEL_CONTROL);
 
 
-        		//register att reportlisteners for dim
-        		this.registerAttrReportListener('genLevelCtrl', 'currentLevel', 2, 300, 1, value => {
-        			this.log('dim report', value);
-        			this.setCapabilityValue('dim', value / maxBrightness);
-        		}, 0);
+await this.configureAttributeReporting([
+  {
+      endpointID: 1,
+      cluster: CLUSTER.ON_OFF,
+      attributeName: 'onOff',
+      minInterval: 0,
+      maxInterval: 300,
+      minChange: 0,
+  },
+]);
+
+await this.configureAttributeReporting([
+  {
+      endpointID: 1,
+      cluster: CLUSTER.LEVEL_CONTROL,
+      attributeName: 'currentLevel',
+      minInterval: 0,
+      maxInterval: 300,
+      minChange: 0,
+  },
+]);
 
 
-        	}
-
-        	// this method is called when the Device has requested a state change (turned on or off)
-    async onCapabilityOnoff( value, opts, callback ) {
-
-        		// return promise, ignore
-        	try {
-            await this.node.endpoints[0].clusters['genOnOff'].do(value ? "on" : "off", {value}).catch(err => null);
-            console.log('onoff command sent');
-        	} catch(e) {
-            console.log('caught error', e);
-          }
-
-          // return resolved promise
-          return Promise.resolve ( );
-        }
-
-
-          // this method is called when the Device has requested a state change (dim)
-
-        // this method is called when the Device has requested a state change (turned on or off)
-    async onCapabilitydim( value, opts, callback ) {
-
-          // return promise, ignore
-          try {
-            await this.node.endpoints[0].clusters['genLevelCtrl'].do("moveToLevelWithOnOff", {level: (value * maxBrightness), transtime: 10}).catch(err => null);
-            console.log('dim command sent');
-          } catch(e) {
-            console.log('caught error', e);
-          }
-
-          // return resolved promise
-          return Promise.resolve( );
-        }
-
+  }
+ }
 }
- module.exports = ESH316GLED;
 
 
+module.exports = ESH316GLED;
+
+//Gen 1 dimmer
 //─────────────── Logging stdout & stderr ───────────────
 //2018-08-11 06:58:25 [log] [ElkoApp] Elko App is running!
 //2018-08-11 06:58:25 [log] [ManagerDrivers] [ESH316GLED] [0] ZigBeeDevice has been inited
@@ -103,5 +83,54 @@ class ESH316GLED extends ZigBeeDevice {
 //2018-08-11 06:58:26 [log] [ManagerDrivers] [ESH316GLED] [0] ---- sid : attrs
 //2018-08-11 06:58:26 [log] [ManagerDrivers] [ESH316GLED] [0] ---- currentLevel : 254
 //2018-08-11 06:58:26 [log] [ManagerDrivers] [ESH316GLED] [0] ------------------------------------------
-//2018-08-11 06:58:26 [log] [ManagerDrivers] [ESH316GLED] [0] registerAttrReportListener() -> already configured attr reporting attrReport_0_genOnOff_onOff
-//2018-08-11 06:58:26 [log] [ManagerDrivers] [ESH316GLED] [0] registerAttrReportListener() -> already configured attr reporting attrReport_0_genLevelCtrl_currentLevel
+
+//Gen 2 Dimmer
+//2020-01-20 13:45:38 [log] [ManagerDrivers] [ESH316GLED] [7] ------------------------------------------
+//2020-01-20 13:45:38 [log] [ManagerDrivers] [ESH316GLED] [7] Node: cd7088b0-532f-4a62-9140-4c1754e25742
+//2020-01-20 13:45:38 [log] [ManagerDrivers] [ESH316GLED] [7] - Battery: false
+//2020-01-20 13:45:38 [log] [ManagerDrivers] [ESH316GLED] [7] - Endpoints: 0
+//2020-01-20 13:45:38 [log] [ManagerDrivers] [ESH316GLED] [7] -- Clusters:
+//2020-01-20 13:45:38 [log] [ManagerDrivers] [ESH316GLED] [7] --- zapp
+//2020-01-20 13:45:38 [log] [ManagerDrivers] [ESH316GLED] [7] --- genBasic
+//2020-01-20 13:45:38 [log] [ManagerDrivers] [ESH316GLED] [7] ---- 65533 : 1
+//2020-01-20 13:45:38 [log] [ManagerDrivers] [ESH316GLED] [7] ---- cid : genBasic
+//2020-01-20 13:45:38 [log] [ManagerDrivers] [ESH316GLED] [7] ---- sid : attrs
+//2020-01-20 13:45:38 [log] [ManagerDrivers] [ESH316GLED] [7] ---- zclVersion : 3
+//2020-01-20 13:45:38 [log] [ManagerDrivers] [ESH316GLED] [7] ---- appVersion : 6
+//2020-01-20 13:45:38 [log] [ManagerDrivers] [ESH316GLED] [7] ---- manufacturerName : ELKO
+//2020-01-20 13:45:38 [log] [ManagerDrivers] [ESH316GLED] [7] ---- modelId : ElkoDimmerZHA
+//2020-01-20 13:45:38 [log] [ManagerDrivers] [ESH316GLED] [7] ---- powerSource : 1
+//2020-01-20 13:45:38 [log] [ManagerDrivers] [ESH316GLED] [7] ---- swBuildId : 0.6
+//2020-01-20 13:45:38 [log] [ManagerDrivers] [ESH316GLED] [7] --- genIdentify
+//2020-01-20 13:45:38 [log] [ManagerDrivers] [ESH316GLED] [7] ---- 65533 : 1
+//2020-01-20 13:45:38 [log] [ManagerDrivers] [ESH316GLED] [7] ---- cid : genIdentify
+//2020-01-20 13:45:38 [log] [ManagerDrivers] [ESH316GLED] [7] ---- sid : attrs
+//2020-01-20 13:45:38 [log] [ManagerDrivers] [ESH316GLED] [7] ---- identifyTime : 0
+//2020-01-20 13:45:38 [log] [ManagerDrivers] [ESH316GLED] [7] --- genGroups
+//2020-01-20 13:45:38 [log] [ManagerDrivers] [ESH316GLED] [7] ---- 65533 : 1
+//2020-01-20 13:45:38 [log] [ManagerDrivers] [ESH316GLED] [7] ---- cid : genGroups
+//2020-01-20 13:45:38 [log] [ManagerDrivers] [ESH316GLED] [7] ---- sid : attrs
+//2020-01-20 13:45:38 [log] [ManagerDrivers] [ESH316GLED] [7] ---- nameSupport : 0
+//2020-01-20 13:45:38 [log] [ManagerDrivers] [ESH316GLED] [7] --- genScenes
+//2020-01-20 13:45:38 [log] [ManagerDrivers] [ESH316GLED] [7] ---- 65533 : 1
+//2020-01-20 13:45:38 [log] [ManagerDrivers] [ESH316GLED] [7] ---- cid : genScenes
+//2020-01-20 13:45:38 [log] [ManagerDrivers] [ESH316GLED] [7] ---- sid : attrs
+//2020-01-20 13:45:38 [log] [ManagerDrivers] [ESH316GLED] [7] ---- count : 0
+//2020-01-20 13:45:38 [log] [ManagerDrivers] [ESH316GLED] [7] ---- currentScene : 0
+//2020-01-20 13:45:38 [log] [ManagerDrivers] [ESH316GLED] [7] ---- currentGroup : 0
+//2020-01-20 13:45:38 [log] [ManagerDrivers] [ESH316GLED] [7] ---- sceneValid : 0
+//2020-01-20 13:45:38 [log] [ManagerDrivers] [ESH316GLED] [7] ---- nameSupport : 0
+//2020-01-20 13:45:38 [log] [ManagerDrivers] [ESH316GLED] [7] --- genOnOff
+//2020-01-20 13:45:38 [log] [ManagerDrivers] [ESH316GLED] [7] ---- 65533 : 1
+//2020-01-20 13:45:38 [log] [ManagerDrivers] [ESH316GLED] [7] ---- cid : genOnOff
+//2020-01-20 13:45:38 [log] [ManagerDrivers] [ESH316GLED] [7] ---- sid : attrs
+//2020-01-20 13:45:38 [log] [ManagerDrivers] [ESH316GLED] [7] ---- onOff : 0
+//2020-01-20 13:45:38 [log] [ManagerDrivers] [ESH316GLED] [7] --- genLevelCtrl
+//2020-01-20 13:45:38 [log] [ManagerDrivers] [ESH316GLED] [7] ---- 65533 : 1
+//2020-01-20 13:45:38 [log] [ManagerDrivers] [ESH316GLED] [7] ---- cid : genLevelCtrl
+//2020-01-20 13:45:38 [log] [ManagerDrivers] [ESH316GLED] [7] ---- sid : attrs
+//2020-01-20 13:45:38 [log] [ManagerDrivers] [ESH316GLED] [7] ---- currentLevel : 79
+//2020-01-20 13:45:38 [log] [ManagerDrivers] [ESH316GLED] [7] --- genOta
+//2020-01-20 13:45:38 [log] [ManagerDrivers] [ESH316GLED] [7] ---- cid : genOta
+//2020-01-20 13:45:38 [log] [ManagerDrivers] [ESH316GLED] [7] ---- sid : attrs
+//2020-01-20 13:45:38 [log] [ManagerDrivers] [ESH316GLED] [7] ------------------------------------------
