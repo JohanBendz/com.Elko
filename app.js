@@ -1,11 +1,13 @@
+'use strict';
+
 const Homey = require('homey');
 
-class ElkoApp extends Homey.App {
-  
-  onInit() {
-    this.log('Elko App is running!');
-  }
-  
+class MyApp extends Homey.App {
+	
+	onInit() {
+		this.log('MyApp is running...');
+	}
+	
 }
 
-module.exports = ElkoApp;
+module.exports = MyApp;
